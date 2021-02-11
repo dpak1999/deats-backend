@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { getConnection, getRepository, Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { User } from 'src/users/entities/user.entity';
@@ -267,6 +267,64 @@ describe('UserModule (e2e)', () => {
     });
   });
 
+  // edit profile
+  describe('editProfile', () => {
+    const NEW_EMAIL = 'test@new.com';
+
+    it('should change email', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', jwtToken)
+        .send({
+          query: `mutation {
+            editProfile(input: { email: "${NEW_EMAIL}" }) {
+              ok
+              error
+            }
+          }
+          `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editProfile: { ok, error },
+              },
+            },
+          } = res;
+
+          expect(ok).toBe(true);
+          expect(error).toBe(null);
+        });
+    });
+
+    it('should have new email', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', jwtToken)
+        .send({
+          query: `{
+            me {
+              email
+            }
+          }
+          `,
+        })
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                me: { email },
+              },
+            },
+          } = res;
+
+          expect(email).toBe(NEW_EMAIL);
+        });
+    });
+  });
+
   it.todo('verifyEmail');
-  it.todo('editProfile');
 });
