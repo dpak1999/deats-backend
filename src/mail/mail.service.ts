@@ -10,11 +10,11 @@ export class MailService {
     @Inject(CONFIG_OPTIONS) private readonly options: MailModuleOptions,
   ) {}
 
-  private async sendEmail(
+  async sendEmail(
     subject: string,
     template: string,
     emailVars: EmailVar[],
-  ) {
+  ): Promise<boolean> {
     const form = new FormData();
     form.append('from', `Admin at Deats <mailgun@${this.options.domain}>`);
     form.append('to', `deepakkumardash@yandex.com`);
@@ -22,7 +22,7 @@ export class MailService {
     form.append('template', template);
     emailVars.forEach((eVar) => form.append(`v:${eVar.key}`, eVar.value));
     try {
-      const response = await got(
+      await got.post(
         `https://api.mailgun.net/v3/${this.options.domain}/messages`,
         {
           headers: {
@@ -30,12 +30,12 @@ export class MailService {
               `api:${this.options.apiKey}`,
             ).toString('base64')}`,
           },
-          method: 'POST',
           body: form,
         },
       );
+      return true;
     } catch (error) {
-      console.log(error);
+      return false;
     }
   }
 
