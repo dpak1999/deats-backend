@@ -1,5 +1,6 @@
 import { Resolver, Args, Mutation } from '@nestjs/graphql';
 import { AuthUser } from 'src/auth/auth-user.decorator';
+import { Role } from 'src/auth/role.decorator';
 import { User } from 'src/users/entities/user.entity';
 import {
   CreateRestaurantInput,
