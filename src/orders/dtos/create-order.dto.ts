@@ -3,7 +3,7 @@ import { MutationOutput } from 'src/common/dtos/output.dto';
 import { Order } from '../entities/order.entity';
 
 @InputType()
-export class CreateOrderInput extends PickType(Order, ['dishes']) {
+export class CreateOrderInput extends PickType(Order, ['items']) {
   @Field(() => Int)
   restaurantId: number;
 }
