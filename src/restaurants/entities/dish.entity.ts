@@ -10,11 +10,11 @@ class DishOption {
   @Field(() => String)
   name: string;
 
-  @Field(() => String, { nullable: true })
+  @Field(() => [String], { nullable: true })
   choices?: string[];
 
-  @Field(() => Int)
-  extra: number;
+  @Field(() => Int, { nullable: true })
+  extra?: number;
 }
 
 @InputType('DishInputType', { isAbstract: true })
