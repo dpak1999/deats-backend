@@ -36,6 +36,7 @@ import { Dish } from './entities/dish.entity';
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
+import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
 
 @Resolver(() => Restaurant)
 export class RestaurantResolver {
@@ -74,10 +75,17 @@ export class RestaurantResolver {
     );
   }
 
+  @Query(() => RestaurantsOutput)
+  restaurants(
+    @Args('input') restaurantsInput: RestaurantsInput,
+  ): Promise<RestaurantsOutput> {
+    return this.restaurantService.allRestaurants(restaurantsInput);
+  }
+
   @Query(() => RestaurantOutput)
   restaurant(
     @Args('input') restaurantInput: RestaurantInput,
-  ): Promise<SearchRestaurantOutput> {
+  ): Promise<RestaurantOutput> {
     return this.restaurantService.findRestaurantById(restaurantInput);
   }
 
