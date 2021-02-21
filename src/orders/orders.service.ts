@@ -5,10 +5,11 @@ import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
 import { User, UserRole } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateOrderInput, CreateOrderOutput } from './dtos/create-order.dto';
+import { EditOrderInput, EditOrderOutput } from './dtos/edit-order.dto';
 import { GetOrderInput, GetOrderOutput } from './dtos/get-order.dto';
 import { GetOrdersInput, GetOrdersOutput } from './dtos/get-orders.dto';
 import { OrderItem } from './entities/order-item.entity';
-import { Order } from './entities/order.entity';
+import { Order, OrderStatus } from './entities/order.entity';
 
 @Injectable()
 export class OrderService {
@@ -129,6 +130,20 @@ export class OrderService {
     }
   }
 
+  canSeeOrder(user: User, order: Order): boolean {
+    let allowed = true;
+    if (user.role === UserRole.Client && order.customerId !== user.id) {
+      allowed = false;
+    }
+    if (user.role === UserRole.Delivery && order.driverId !== user.id) {
+      allowed = false;
+    }
+    if (user.role === UserRole.Owner && order.restaurant.ownerId !== user.id) {
+      allowed = false;
+    }
+    return allowed;
+  }
+
   async getOrder(
     user: User,
     { id: orderId }: GetOrderInput,
@@ -144,21 +159,7 @@ export class OrderService {
         };
       }
 
-      let allowed = true;
-      if (user.role === UserRole.Client && order.customerId !== user.id) {
-        allowed = false;
-      }
-      if (user.role === UserRole.Delivery && order.driverId !== user.id) {
-        allowed = false;
-      }
-      if (
-        user.role === UserRole.Owner &&
-        order.restaurant.ownerId !== user.id
-      ) {
-        allowed = false;
-      }
-
-      if (!allowed) {
+      if (!this.canSeeOrder(user, order)) {
         return {
           ok: false,
           error: 'You are not authorised for that',
@@ -172,6 +173,68 @@ export class OrderService {
       return {
         ok: false,
         error: 'Uh Oh! could not get order',
+      };
+    }
+  }
+
+  async editOrder(
+    user: User,
+    { id: orderId, status }: EditOrderInput,
+  ): Promise<EditOrderOutput> {
+    try {
+      const order = await this.orders.findOne(orderId, {
+        relations: ['restaurant'],
+      });
+      if (!order) {
+        return {
+          ok: false,
+          error: 'Order not found',
+        };
+      }
+      if (!this.canSeeOrder(user, order)) {
+        return {
+          ok: false,
+          error: 'You are not authorised for that',
+        };
+      }
+      let canEdit = true;
+
+      if (user.role === UserRole.Client) {
+        canEdit = false;
+      }
+
+      if (user.role === UserRole.Owner) {
+        if (status !== OrderStatus.Cooking && status !== OrderStatus.Cooked) {
+          canEdit = false;
+        }
+      }
+      if (user.role === UserRole.Delivery) {
+        if (
+          status !== OrderStatus.PickedUp &&
+          status !== OrderStatus.Delivered
+        ) {
+          canEdit = false;
+        }
+      }
+      if (!canEdit) {
+        return {
+          ok: false,
+          error: 'Oops! you cant do that',
+        };
+      }
+      await this.orders.save([
+        {
+          id: orderId,
+          status: status,
+        },
+      ]);
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Cannot Edit order',
       };
     }
   }
