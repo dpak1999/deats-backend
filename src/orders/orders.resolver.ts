@@ -9,7 +9,7 @@ import { OrderService } from './orders.service';
 
 @Resolver(() => Order)
 export class OrderResolver {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly ordersService: OrderService) {}
 
   @Mutation(() => CreateOrderOutput)
   @Role(['Client'])
@@ -18,7 +18,7 @@ export class OrderResolver {
     @Args('input')
     createOrderInput: CreateOrderInput,
   ): Promise<CreateOrderOutput> {
-    return this.orderService.createOrder(customer, createOrderInput);
+    return this.ordersService.createOrder(customer, createOrderInput);
   }
 
   @Query(() => GetOrdersOutput)
@@ -27,6 +27,6 @@ export class OrderResolver {
     @AuthUser() user: User,
     @Args('input') getOrdersInput: GetOrdersInput,
   ): Promise<GetOrdersOutput> {
-    return this.orderService.getOrders(user, getOrdersInput);
+    return this.ordersService.getOrders(user, getOrdersInput);
   }
 }

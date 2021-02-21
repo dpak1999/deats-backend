@@ -1,5 +1,5 @@
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
-import { MutationOutput } from './output.dto';
+import { CoreOutput } from './output.dto';
 
 @InputType()
 export class PaginationInput {
@@ -8,7 +8,7 @@ export class PaginationInput {
 }
 
 @ObjectType()
-export class PaginationOutput extends MutationOutput {
+export class PaginationOutput extends CoreOutput {
   @Field(() => Int, { nullable: true })
   totalPages?: number;
 

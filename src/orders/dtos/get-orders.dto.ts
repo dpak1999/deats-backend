@@ -1,5 +1,5 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { MutationOutput } from 'src/common/dtos/output.dto';
+import { CoreOutput } from 'src/common/dtos/output.dto';
 import { Order, OrderStatus } from '../entities/order.entity';
 
 @InputType()
@@ -9,7 +9,7 @@ export class GetOrdersInput {
 }
 
 @ObjectType()
-export class GetOrdersOutput extends MutationOutput {
+export class GetOrdersOutput extends CoreOutput {
   @Field(() => [Order], { nullable: true })
   orders?: Order[];
 }

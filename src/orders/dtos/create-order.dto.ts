@@ -1,5 +1,5 @@
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
-import { MutationOutput } from 'src/common/dtos/output.dto';
+import { CoreOutput } from 'src/common/dtos/output.dto';
 import { OrderItemOption } from '../entities/order-item.entity';
 
 @InputType()
@@ -21,4 +21,4 @@ export class CreateOrderInput {
 }
 
 @ObjectType()
-export class CreateOrderOutput extends MutationOutput {}
+export class CreateOrderOutput extends CoreOutput {}
