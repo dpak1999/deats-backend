@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { Interval } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
 import { User } from 'src/users/entities/user.entity';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import {
   CreatePaymentInput,
   CreatePaymentOutput,
@@ -44,6 +45,11 @@ export class PaymentService {
           restaurant,
         }),
       );
+      restaurant.isPromoted = true;
+      const date = new Date();
+      date.setDate(date.getDate() + 14);
+      restaurant.promotedUntil = date;
+      this.restaurants.save(restaurant);
       return {
         ok: true,
       };
@@ -68,5 +74,19 @@ export class PaymentService {
         error: 'Not able to fetch payments',
       };
     }
+  }
+
+  @Interval(3600000)
+  async checkPromotedRestaurants() {
+    const restaurants = await this.restaurants.find({
+      isPromoted: true,
+      promotedUntil: LessThan(new Date()),
+    });
+
+    restaurants.forEach(async (restaurant) => {
+      restaurant.isPromoted = false;
+      restaurant.promotedUntil = null;
+      await this.restaurants.save(restaurant);
+    });
   }
 }
