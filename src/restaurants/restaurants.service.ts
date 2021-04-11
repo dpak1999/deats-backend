@@ -29,6 +29,7 @@ import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
 import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
+import { MyRestaurantsOutput } from './dtos/my-restaurants.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -173,15 +174,15 @@ export class RestaurantService {
         order: {
           isPromoted: 'DESC',
         },
-        take: 10,
-        skip: (page - 1) * 10,
+        take: 3,
+        skip: (page - 1) * 3,
       });
       category.restaurants = restaurants;
       const totalResults = await this.countRestaurants(category);
       return {
         ok: true,
         category,
-        totalPages: Math.ceil(totalResults / 10),
+        totalPages: Math.ceil(totalResults / 3),
       };
     } catch {
       return {
@@ -194,8 +195,8 @@ export class RestaurantService {
   async allRestaurants({ page }: RestaurantsInput): Promise<RestaurantsOutput> {
     try {
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
-        skip: (page - 1) * 10,
-        take: 10,
+        skip: (page - 1) * 3,
+        take: 3,
         order: {
           isPromoted: 'DESC',
         },
@@ -203,7 +204,7 @@ export class RestaurantService {
       return {
         ok: true,
         results: restaurants,
-        totalPages: Math.ceil(totalResults / 10),
+        totalPages: Math.ceil(totalResults / 3),
         totalResults,
       };
     } catch {
@@ -364,6 +365,21 @@ export class RestaurantService {
       return {
         ok: false,
         error: 'Unable to delete dish',
+      };
+    }
+  }
+
+  async myRestaurants(owner: User): Promise<MyRestaurantsOutput> {
+    try {
+      const restaurants = await this.restaurants.find({ owner });
+      return {
+        restaurants,
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not find Restaurants',
       };
     }
   }
